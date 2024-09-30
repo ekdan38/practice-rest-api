@@ -32,6 +32,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.0.0'
     compileOnly 'org.projectlombok:lombok'
     testRuntimeOnly 'com.h2database:h2'
     compileOnly 'com.mysql:mysql-connector-j'
