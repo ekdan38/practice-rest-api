@@ -2,6 +2,7 @@ package com.example.practicerestapi.events;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -36,9 +37,20 @@ public class EventController {
         }
 
         Event event = modelMapper.map(eventDto, Event.class);
+        event.update();
         Event newEvent = eventRepository.save(event);
+
         URI uri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
-        return ResponseEntity.created(uri).body(event);
+
+        EntityModel<Event> eventModel = EntityModel.of(event);
+
+//        EventPresentationModel eventPresentationModel = new EventPresentationModel(event); //json변환 과정에서 event 객체로 감싼놈
+        eventModel.add(linkTo(EventController.class).withSelfRel());
+        eventModel.add(linkTo(EventController.class).withRel("query-events"));
+        eventModel.add(linkTo(EventController.class).withRel("update-event"));
+        // update의 method는 put이다. 따라서 주소가 같아도 상관없다. (아쉽지만 method는 hateoas로 명시하지 못한다.)
+
+        return ResponseEntity.created(uri).body(eventModel);
     }
 
 }
