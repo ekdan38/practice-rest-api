@@ -15,6 +15,7 @@ java {
 }
 
 configurations {
+    asciidoctorExt
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -25,7 +26,7 @@ repositories {
 }
 
 ext {
-    set('snippetsDir', file("build/generated-snippets"))
+    snippetsDir = file('build/generated-snippets')
 }
 
 dependencies {
@@ -33,16 +34,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.0.0'
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.0.0' //
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor:3.0.1' //
     compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'com.mysql:mysql-connector-j'
     testRuntimeOnly 'com.h2database:h2'
-    implementation 'pl.pragmatists:JUnitParams:1.1.1'
 
-    compileOnly 'com.mysql:mysql-connector-j'
+    implementation 'pl.pragmatists:JUnitParams:1.1.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
@@ -53,4 +56,30 @@ tasks.named('test') {
 tasks.named('asciidoctor') {
     inputs.dir snippetsDir
     dependsOn test
+}
+
+asciidoctor {
+    inputs.dir snippetsDir
+    configurations 'asciidoctorExt'
+    dependsOn test
+}
+
+tasks.register('copyDocument', Copy) {
+    dependsOn asciidoctor // Asciidoctor 작업이 먼저 수행된 후 실행
+
+    from("${asciidoctor.outputDir}") // Asciidoctor로 생성된 문서가 있는 경로
+    into 'src/main/resources/static/docs' // 실제 로컬 디렉터리에 복사할 경로
+}
+
+build {
+    dependsOn copyDocument
+}
+
+bootJar {
+    dependsOn asciidoctor
+    println("start bootjar")
+    println("${asciidoctor.outputDir}")
+    from ("${asciidoctor.outputDir}") {
+        into 'src/main/resources/static/docs'
+    }
 }

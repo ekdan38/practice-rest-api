@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.validation.Errors;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ public class ErrorsSerializer extends JsonSerializer<Errors> {
      */
     @Override
     public void serialize(Errors errors, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        gen.writeFieldName("errors");
         gen.writeStartArray(); //json 배열 시작
         errors.getFieldErrors().forEach(e -> {
             try {
@@ -29,7 +31,7 @@ public class ErrorsSerializer extends JsonSerializer<Errors> {
                 }
                 gen.writeEndObject();
             } catch (IOException ex) {
-                throw new RuntimeException(ex);
+               ex.printStackTrace();
             }
         });
 
@@ -41,9 +43,10 @@ public class ErrorsSerializer extends JsonSerializer<Errors> {
                 gen.writeStringField("defaultMessage", e.getDefaultMessage());
                 gen.writeEndObject();
             } catch (IOException ex) {
-                throw new RuntimeException(ex);
+                ex.printStackTrace();
             }
         });
         gen.writeEndArray(); //json 배열 종료
     }
+
 }
